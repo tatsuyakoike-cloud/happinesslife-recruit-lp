@@ -62,10 +62,6 @@ app.innerHTML = `
             <p class="scrollStoryLine">AIを活用した営業スキルで、</p>
             <p class="scrollStoryLine">関わる人の人生を変える。</p>
           </div>
-          <div class="scrollStoryOutro">
-            <div class="kicker">RECRUIT MESSAGE</div>
-            <h2 class="title">現場を動かす力は、<br><span>人生を前に進める力になる。</span></h2>
-          </div>
           <div class="scrollStorySteps" aria-hidden="true">
             <span class="scrollStoryStep is-active"></span>
             <span class="scrollStoryStep"></span>
@@ -110,7 +106,7 @@ app.innerHTML = `
                   通信商材の知識、接客トーク、販売導線、イベント運営、チーム連携。
                   入社後は実際の現場を通じて、営業として必要な力を段階的に身につけていきます。
                 </p>
-                <div class="chipList">
+                <div class="chipList is-ghost">
                   <span class="chip">接客力</span>
                   <span class="chip">営業力</span>
                   <span class="chip">企画力</span>
@@ -173,11 +169,23 @@ app.innerHTML = `
                 成長実感を得やすい仕事です。
               </p>
             </div>
-            <div class="flow reveal">
-              <div class="flowItem"><div><h3>現場を理解する</h3><p>商材、ターゲット、導線、来店状況を把握し、成果につながる動きを設計します。</p></div></div>
-              <div class="flowItem"><div><h3>お客様と接点をつくる</h3><p>声かけ・ヒアリング・提案を通じて、お客様の課題やニーズを引き出します。</p></div></div>
-              <div class="flowItem"><div><h3>チームで成果をつくる</h3><p>メンバー同士で連携しながら、現場全体の成果を最大化していきます。</p></div></div>
-              <div class="flowItem"><div><h3>振り返って改善する</h3><p>うまくいった理由・改善点を整理し、次の現場に活かします。</p></div></div>
+            <div class="flow flowSteps reveal">
+              <div class="flowItem">
+                <span class="flowNum">01</span>
+                <div class="flowBody"><h3>現場を理解する</h3><p>商材、ターゲット、導線、来店状況を把握し、成果につながる動きを設計します。</p></div>
+              </div>
+              <div class="flowItem">
+                <span class="flowNum">02</span>
+                <div class="flowBody"><h3>お客様と接点をつくる</h3><p>声かけ・ヒアリング・提案を通じて、お客様の課題やニーズを引き出します。</p></div>
+              </div>
+              <div class="flowItem">
+                <span class="flowNum">03</span>
+                <div class="flowBody"><h3>チームで成果をつくる</h3><p>メンバー同士で連携しながら、現場全体の成果を最大化していきます。</p></div>
+              </div>
+              <div class="flowItem">
+                <span class="flowNum">04</span>
+                <div class="flowBody"><h3>振り返って改善する</h3><p>うまくいった理由・改善点を整理し、次の現場に活かします。</p></div>
+              </div>
             </div>
           </div>
         </div>
@@ -302,8 +310,6 @@ function initReveal() {
 }
 
 const STORY_LINE_COUNT = 3;
-const STORY_PHASE_END = 0.72;
-const OUTRO_START = 0.72;
 
 function initScrollStory() {
   const section = document.querySelector('.scrollStory');
@@ -319,13 +325,13 @@ function initScrollStory() {
   const scrollText = section.querySelector('.scrollText');
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  document.documentElement.style.setProperty('--hero-scroll-steps', '4');
+  document.documentElement.style.setProperty('--hero-scroll-steps', '3');
 
   if (prefersReduced) {
     images.forEach((img, i) => img.classList.toggle('is-active', i === 0));
     lines.forEach((line) => line.classList.add('is-visible'));
     steps.forEach((step, i) => step.classList.toggle('is-active', i === STORY_LINE_COUNT - 1));
-    section.classList.add('is-outro', 'is-complete');
+    section.classList.add('is-complete');
     panel?.classList.add('is-complete');
     main.classList.add('is-unlocked');
     main.removeAttribute('aria-hidden');
@@ -344,11 +350,8 @@ function initScrollStory() {
   function update() {
     ticking = false;
     const progress = getProgress();
-    const inStory = progress < OUTRO_START;
-    const storyProgress = inStory ? progress / STORY_PHASE_END : 1;
     const isComplete = progress >= 0.998;
 
-    section.classList.toggle('is-outro', progress >= OUTRO_START);
     section.classList.toggle('is-complete', isComplete);
     panel?.classList.toggle('is-complete', isComplete);
     main.classList.toggle('is-unlocked', isComplete);
@@ -360,13 +363,13 @@ function initScrollStory() {
     }
 
     if (scrollText) {
-      scrollText.style.opacity = progress >= OUTRO_START ? '0' : '1';
+      scrollText.style.opacity = progress >= 0.92 ? '0' : '1';
     }
 
-    if (inStory) {
+    if (!isComplete) {
       images.forEach((img, index) => {
         const center = STORY_LINE_COUNT <= 1 ? 0 : index / (STORY_LINE_COUNT - 1);
-        const distance = Math.abs(storyProgress - center) * (STORY_LINE_COUNT - 1);
+        const distance = Math.abs(progress - center) * (STORY_LINE_COUNT - 1);
         const opacity = Math.max(0, 1 - distance * 0.85);
         const scale = 1.04 + (1 - opacity) * 0.08;
         img.style.opacity = String(opacity);
@@ -376,20 +379,13 @@ function initScrollStory() {
 
       lines.forEach((line, index) => {
         const threshold = index / STORY_LINE_COUNT + 0.03;
-        line.classList.toggle('is-visible', storyProgress >= threshold);
+        line.classList.toggle('is-visible', progress >= threshold);
       });
 
       steps.forEach((step, index) => {
         const threshold = (index + 0.5) / STORY_LINE_COUNT;
-        step.classList.toggle('is-active', storyProgress >= threshold - 0.1);
+        step.classList.toggle('is-active', progress >= threshold - 0.1);
       });
-    } else if (!isComplete) {
-      images.forEach((img) => {
-        img.style.opacity = '0';
-        img.classList.remove('is-active');
-      });
-      lines.forEach((line) => line.classList.remove('is-visible'));
-      steps.forEach((step) => step.classList.remove('is-active'));
     }
   }
 

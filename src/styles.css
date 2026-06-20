@@ -143,11 +143,6 @@ body.is-hero-active {
   transition: opacity 0.35s ease;
 }
 
-.scrollStory.is-outro .scrollStoryUi .header .logoWrap {
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.1);
-}
-
 .header {
   position: absolute;
   top: 22px;
@@ -230,67 +225,6 @@ body.is-hero-active {
   opacity: 1;
   transform: translateY(0);
   filter: blur(0);
-}
-
-.scrollStoryOutro {
-  position: absolute;
-  inset: 0;
-  z-index: 7;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: clamp(96px, 14vh, 140px) clamp(20px, 6vw, 88px) clamp(88px, 12vh, 120px);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, #ffffff 36%);
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.65s ease, transform 0.65s ease;
-  pointer-events: none;
-}
-
-.scrollStoryOutro .kicker {
-  color: var(--accent);
-}
-
-.scrollStoryOutro .kicker::before {
-  background: linear-gradient(90deg, var(--sky), var(--accent));
-}
-
-.scrollStoryOutro .title {
-  color: var(--text);
-}
-
-.scrollStoryOutro .title span {
-  color: transparent;
-  background: linear-gradient(90deg, var(--accent-dark) 0%, var(--accent) 45%, var(--sky) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
-.scrollStory.is-outro .scrollStoryOutro {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.scrollStory.is-complete .scrollStoryOutro {
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-
-.scrollStory.is-outro .scrollStoryCopy,
-.scrollStory.is-outro .scrollStorySteps {
-  opacity: 0;
-  transform: translateY(-16px);
-  transition: opacity 0.45s ease, transform 0.45s ease;
-}
-
-.scrollStory.is-outro .scrollStoryImages,
-.scrollStory.is-outro .scrollStoryOverlay {
-  opacity: 0;
-  transition: opacity 0.7s ease;
-}
-
-.scrollStory.is-outro .scrollStoryUi .header {
-  pointer-events: auto;
 }
 
 .scrollStorySteps {
@@ -615,38 +549,76 @@ body.is-hero-active {
   font-weight: 700;
 }
 
+.chipList.is-ghost {
+  gap: 0.35em 1.1em;
+  margin-top: 28px;
+  line-height: 1.6;
+}
+
+.chipList.is-ghost .chip {
+  min-height: auto;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(37, 99, 235, 0.38);
+  font-size: clamp(14px, 1.6vw, 16px);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.chipList.is-ghost .chip + .chip::before {
+  content: "·";
+  margin-right: 1.1em;
+  color: rgba(125, 211, 252, 0.75);
+  font-weight: 700;
+}
+
 .flow {
   display: grid;
   gap: 14px;
-  counter-reset: flow;
+}
+
+.flowSteps {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
 }
 
 .flowItem {
-  counter-increment: flow;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 18px;
-  align-items: start;
-  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  min-height: 176px;
+  height: 100%;
+  padding: 24px;
   border-radius: 22px;
   background: var(--surface);
   border: 1px solid var(--line);
 }
 
-.flowItem::before {
-  content: counter(flow);
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
+.flowNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 16px;
   border-radius: 12px;
   background: linear-gradient(135deg, var(--sky), var(--accent));
   color: #ffffff;
+  font-size: 13px;
   font-weight: 900;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.flowBody {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .flowItem h3 {
-  margin: 0 0 5px;
+  margin: 0 0 8px;
   font-size: 18px;
   line-height: 1.45;
   color: var(--text);
@@ -656,6 +628,7 @@ body.is-hero-active {
   margin: 0;
   color: var(--muted);
   font-size: 14px;
+  line-height: 1.75;
 }
 
 .jobTable {
@@ -853,6 +826,10 @@ body.is-hero-active {
     padding-top: 8px;
   }
 
+  .flowSteps {
+    grid-template-columns: 1fr;
+  }
+
   .scrollStorySpacer {
     height: calc(var(--hero-scroll-steps, 4) * 100svh);
   }
@@ -887,8 +864,12 @@ body.is-hero-active {
     padding: 24px;
   }
 
-  .flowItem {
+  .flowSteps {
     grid-template-columns: 1fr;
+  }
+
+  .flowItem {
+    min-height: 148px;
   }
 
   .btn {
