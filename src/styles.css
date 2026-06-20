@@ -1,8 +1,8 @@
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
-  color: #f7f3ed;
-  background: #080808;
+  color: #0f172a;
+  background: #ffffff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -20,7 +20,7 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  background: #080808;
+  background: #ffffff;
 }
 
 img {
@@ -34,21 +34,19 @@ a {
 }
 
 .lp {
-  --bg: #080808;
-  --text: #f7f3ed;
-  --muted: rgba(247, 243, 237, 0.68);
-  --line: rgba(255, 255, 255, 0.13);
-  --orange: #ff7a1a;
-  --pink: #e7317b;
-  --blue: #2b7cff;
+  --bg: #ffffff;
+  --surface: #f0f9ff;
+  --sky: #7dd3fc;
+  --sky-light: #e0f2fe;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --text: #0f172a;
+  --muted: #475569;
+  --line: rgba(37, 99, 235, 0.14);
   color: var(--text);
-  background:
-    radial-gradient(circle at 12% 12%, rgba(255, 122, 26, 0.24), transparent 31%),
-    radial-gradient(circle at 82% 8%, rgba(231, 49, 123, 0.20), transparent 34%),
-    radial-gradient(circle at 70% 65%, rgba(43, 124, 255, 0.14), transparent 33%),
-    linear-gradient(180deg, #060606 0%, #111 44%, #0a0a0a 100%);
+  background: var(--bg);
   line-height: 1.8;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .sr-only {
@@ -63,69 +61,61 @@ a {
   border: 0;
 }
 
-.hero {
+/* ── Scroll story hero ── */
+.scrollStory {
   position: relative;
-  min-height: 100svh;
-  height: 100vh;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.08), transparent 32%),
-    linear-gradient(135deg, rgba(255, 122, 26, 0.20), rgba(231, 49, 123, 0.07) 42%, rgba(43, 124, 255, 0.11));
+  height: 320vh;
 }
 
-.hero::after {
-  content: "";
+.scrollStorySticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--sky-light);
+}
+
+.scrollStoryImages {
   position: absolute;
   inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.12), transparent 44%, rgba(0, 0, 0, 0.86)),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0, rgba(255, 255, 255, 0.025) 1px, transparent 1px, transparent 4px);
-  mix-blend-mode: screen;
-  opacity: 0.48;
-  z-index: 4;
+  z-index: 1;
 }
 
-.webglCanvas {
+.scrollStoryImage {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 2;
-}
-
-.heroFallback {
-  position: absolute;
-  inset: -8%;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 16px;
-  transform: rotate(-8deg) scale(1.08);
-  opacity: 1;
-  transition: opacity 0.8s ease;
-  filter: saturate(1.05) contrast(1.04);
-}
-
-.hero.is-webgl-ready .heroFallback {
-  opacity: 0;
-}
-
-.heroFallback img {
-  width: 100%;
-  height: 32vh;
   object-fit: cover;
-  border-radius: 22px;
-  opacity: 0.48;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: scale(1.12);
+  transition: opacity 0.55s ease, transform 1.1s ease;
+  will-change: opacity, transform;
 }
 
-.heroFallback img:nth-child(even) {
-  transform: translateY(48px);
+.scrollStoryImage.is-active {
+  opacity: 1;
+  transform: scale(1.04);
 }
 
-.heroUi {
+.scrollStoryOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, rgba(125, 211, 252, 0.35) 0%, rgba(37, 99, 235, 0.25) 48%, rgba(15, 23, 42, 0.45) 100%),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.08), transparent 35%, rgba(15, 23, 42, 0.55));
+  animation: overlayPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes overlayPulse {
+  0% { opacity: 0.88; }
+  100% { opacity: 1; }
+}
+
+.scrollStoryUi {
   position: absolute;
   inset: 0;
   z-index: 8;
@@ -149,11 +139,11 @@ a {
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.74);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 999px;
   backdrop-filter: blur(14px);
-  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.12);
 }
 
 .logoWrap img {
@@ -168,32 +158,108 @@ a {
   min-height: 46px;
   padding: 0 18px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background: rgba(12, 12, 12, 0.36);
-  color: #fff;
+  border: 1px solid transparent;
+  background: var(--accent);
+  color: #ffffff;
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  backdrop-filter: blur(16px);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
-  transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.28);
+  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .miniBtn:hover {
   transform: translateY(-2px);
-  background: rgba(255, 122, 26, 0.36);
-  border-color: rgba(255, 255, 255, 0.48);
+  background: var(--accent-dark);
+  box-shadow: 0 16px 40px rgba(29, 78, 216, 0.35);
+}
+
+.scrollStoryCopy {
+  position: absolute;
+  left: clamp(20px, 6vw, 88px);
+  right: clamp(20px, 6vw, 88px);
+  bottom: clamp(96px, 16vh, 160px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  pointer-events: none;
+}
+
+.scrollStoryLine {
+  margin: 0;
+  font-size: clamp(28px, 5.8vw, 68px);
+  font-weight: 900;
+  line-height: 1.22;
+  letter-spacing: -0.04em;
+  color: #ffffff;
+  text-shadow: 0 4px 28px rgba(15, 23, 42, 0.45);
+  opacity: 0;
+  transform: translateY(36px);
+  filter: blur(6px);
+  transition: opacity 0.7s ease, transform 0.7s ease, filter 0.7s ease;
+}
+
+.scrollStoryLine.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+.scrollStorySteps {
+  position: absolute;
+  right: clamp(16px, 4vw, 40px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.scrollStoryStep {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: transform 0.35s ease, background 0.35s ease;
+}
+
+.scrollStoryStep.is-active {
+  background: #ffffff;
+  transform: scale(1.35);
+  box-shadow: 0 0 0 4px rgba(125, 211, 252, 0.45);
+}
+
+.scrollStoryProgress {
+  position: absolute;
+  left: clamp(20px, 6vw, 88px);
+  right: clamp(20px, 6vw, 88px);
+  bottom: clamp(52px, 8vh, 72px);
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  overflow: hidden;
+}
+
+.scrollStoryProgressFill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--sky), #ffffff);
+  transition: width 0.12s linear;
 }
 
 .scrollText {
   position: absolute;
   left: 50%;
-  bottom: 28px;
+  bottom: 22px;
   transform: translateX(-50%);
   display: grid;
   place-items: center;
   gap: 10px;
-  color: rgba(255, 255, 255, 0.76);
+  color: rgba(255, 255, 255, 0.88);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.22em;
@@ -203,8 +269,8 @@ a {
 .scrollText::after {
   content: "";
   width: 1px;
-  height: 64px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
+  height: 48px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
   animation: scrollLine 1.8s ease-in-out infinite;
 }
 
@@ -219,13 +285,14 @@ a {
   }
 }
 
+/* ── Main content ── */
 .main {
   position: relative;
   z-index: 10;
   background:
-    radial-gradient(circle at 8% 0%, rgba(255, 122, 26, 0.18), transparent 32%),
-    radial-gradient(circle at 95% 25%, rgba(43, 124, 255, 0.13), transparent 34%),
-    #0a0a0a;
+    radial-gradient(circle at 8% 0%, rgba(125, 211, 252, 0.35), transparent 32%),
+    radial-gradient(circle at 95% 12%, rgba(37, 99, 235, 0.08), transparent 34%),
+    #ffffff;
 }
 
 .container {
@@ -247,7 +314,7 @@ a {
   align-items: center;
   gap: 10px;
   margin-bottom: 18px;
-  color: rgba(255, 255, 255, 0.70);
+  color: var(--accent);
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -258,7 +325,7 @@ a {
   content: "";
   width: 34px;
   height: 1px;
-  background: linear-gradient(90deg, var(--orange), var(--pink));
+  background: linear-gradient(90deg, var(--sky), var(--accent));
 }
 
 .title {
@@ -267,11 +334,12 @@ a {
   line-height: 1.08;
   letter-spacing: -0.06em;
   font-weight: 950;
+  color: var(--text);
 }
 
 .title span {
   color: transparent;
-  background: linear-gradient(90deg, #fff 0%, #ffd8b3 36%, var(--orange) 66%, var(--pink) 100%);
+  background: linear-gradient(90deg, var(--accent-dark) 0%, var(--accent) 45%, var(--sky) 100%);
   -webkit-background-clip: text;
   background-clip: text;
 }
@@ -315,9 +383,8 @@ a {
   overflow: hidden;
   border-radius: 28px;
   border: 1px solid var(--line);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.045)), rgba(255, 255, 255, 0.04);
-  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.24);
-  backdrop-filter: blur(16px);
+  background: linear-gradient(145deg, #ffffff, var(--surface));
+  box-shadow: 0 16px 48px rgba(37, 99, 235, 0.08);
 }
 
 .card::before {
@@ -325,8 +392,8 @@ a {
   position: absolute;
   inset: -1px;
   background:
-    radial-gradient(circle at 15% 0%, rgba(255, 122, 26, 0.30), transparent 32%),
-    radial-gradient(circle at 100% 0%, rgba(231, 49, 123, 0.18), transparent 30%);
+    radial-gradient(circle at 15% 0%, rgba(125, 211, 252, 0.45), transparent 32%),
+    radial-gradient(circle at 100% 0%, rgba(37, 99, 235, 0.12), transparent 30%);
   opacity: 0;
   transition: opacity 0.35s ease;
   pointer-events: none;
@@ -354,6 +421,7 @@ a {
   font-size: 22px;
   line-height: 1.35;
   letter-spacing: -0.03em;
+  color: var(--text);
 }
 
 .card p {
@@ -370,10 +438,10 @@ a {
   height: 42px;
   margin-bottom: 22px;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--orange), var(--pink));
-  color: #fff;
+  background: linear-gradient(135deg, var(--sky), var(--accent));
+  color: #ffffff;
   font-weight: 900;
-  box-shadow: 0 14px 40px rgba(255, 122, 26, 0.24);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.22);
 }
 
 .imageCard {
@@ -385,14 +453,13 @@ a {
   height: 100%;
   min-height: 520px;
   object-fit: cover;
-  filter: saturate(1.03) contrast(1.03);
 }
 
 .imageCard::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.86), transparent 58%);
+  background: linear-gradient(0deg, rgba(15, 23, 42, 0.78), transparent 58%);
   z-index: 1;
 }
 
@@ -402,6 +469,7 @@ a {
   left: 28px;
   right: 28px;
   bottom: 28px;
+  color: #ffffff;
 }
 
 .imageCaption strong {
@@ -414,7 +482,7 @@ a {
 .imageCaption span {
   display: block;
   margin-top: 12px;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.82);
   font-size: 15px;
 }
 
@@ -431,9 +499,9 @@ a {
   min-height: 42px;
   padding: 0 16px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.82);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--accent-dark);
   font-size: 14px;
   font-weight: 700;
 }
@@ -452,8 +520,8 @@ a {
   align-items: start;
   padding: 22px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 
 .flowItem::before {
@@ -463,8 +531,8 @@ a {
   display: grid;
   place-items: center;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: linear-gradient(135deg, var(--sky), var(--accent));
+  color: #ffffff;
   font-weight: 900;
 }
 
@@ -472,6 +540,7 @@ a {
   margin: 0 0 5px;
   font-size: 18px;
   line-height: 1.45;
+  color: var(--text);
 }
 
 .flowItem p {
@@ -487,13 +556,13 @@ a {
   overflow: hidden;
   border-radius: 28px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.055);
+  background: #ffffff;
 }
 
 .jobTable th,
 .jobTable td {
   padding: 20px 22px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  border-bottom: 1px solid var(--line);
   vertical-align: top;
   text-align: left;
 }
@@ -505,10 +574,10 @@ a {
 
 .jobTable th {
   width: 190px;
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--accent-dark);
   font-size: 14px;
   letter-spacing: 0.06em;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface);
 }
 
 .jobTable td {
@@ -522,16 +591,16 @@ a {
   border-radius: 36px;
   padding: clamp(32px, 6vw, 74px);
   background:
-    radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.22), transparent 22%),
-    linear-gradient(135deg, rgba(255, 122, 26, 0.92), rgba(231, 49, 123, 0.86) 56%, rgba(43, 124, 255, 0.68));
-  box-shadow: 0 30px 130px rgba(255, 122, 26, 0.22);
+    radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.55), transparent 22%),
+    linear-gradient(135deg, var(--sky) 0%, var(--accent) 58%, var(--accent-dark) 100%);
+  box-shadow: 0 24px 80px rgba(37, 99, 235, 0.22);
 }
 
 .entryBox::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(-18deg, rgba(255, 255, 255, 0.12) 0, rgba(255, 255, 255, 0.12) 1px, transparent 1px, transparent 12px);
+  background: repeating-linear-gradient(-18deg, rgba(255, 255, 255, 0.14) 0, rgba(255, 255, 255, 0.14) 1px, transparent 1px, transparent 12px);
   opacity: 0.35;
   pointer-events: none;
 }
@@ -547,15 +616,24 @@ a {
   line-height: 0.98;
   letter-spacing: -0.07em;
   font-weight: 950;
+  color: #ffffff;
 }
 
 .entryBox p {
   max-width: 720px;
   margin: 24px 0 0;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.92);
   font-size: clamp(16px, 2vw, 19px);
   line-height: 2;
   font-weight: 650;
+}
+
+.entryBox .kicker {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.entryBox .kicker::before {
+  background: linear-gradient(90deg, #ffffff, rgba(255, 255, 255, 0.5));
 }
 
 .btnRow {
@@ -578,29 +656,33 @@ a {
 }
 
 .btn.primary {
-  background: #fff;
-  color: #111;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 14px 36px rgba(37, 99, 235, 0.28);
+}
+
+.btn.primary:hover {
+  background: var(--accent-dark);
 }
 
 .btn.secondary {
-  color: #fff;
-  background: rgba(0, 0, 0, 0.20);
-  border: 1px solid rgba(255, 255, 255, 0.34);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(10px);
 }
 
 .btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 20px 48px rgba(37, 99, 235, 0.22);
 }
 
 .footer {
   padding: 34px 0 46px;
-  color: rgba(255, 255, 255, 0.52);
+  color: var(--muted);
   font-size: 13px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: #0a0a0a;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .footerInner {
@@ -609,6 +691,17 @@ a {
   gap: 18px;
   flex-wrap: wrap;
   align-items: center;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 @media (max-width: 920px) {
@@ -644,6 +737,10 @@ a {
 
   .jobTable td {
     padding-top: 8px;
+  }
+
+  .scrollStory {
+    height: 280vh;
   }
 }
 
@@ -683,17 +780,14 @@ a {
   .btn {
     width: 100%;
   }
-}
 
-.reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
-}
+  .scrollStoryCopy {
+    bottom: clamp(88px, 14vh, 120px);
+  }
 
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+  .scrollStorySteps {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -701,8 +795,17 @@ a {
     scroll-behavior: auto;
   }
 
-  .scrollText::after {
+  .scrollText::after,
+  .scrollStoryOverlay {
     animation: none;
+  }
+
+  .scrollStoryImage {
+    transition: none;
+  }
+
+  .scrollStoryLine {
+    transition: none;
   }
 
   .reveal {

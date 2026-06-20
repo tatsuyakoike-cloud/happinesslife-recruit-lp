@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import './styles.css';
 
 const ENTRY_URL = 'https://happinesslife-corp.studio.site/contact';
@@ -38,20 +37,40 @@ const app = document.querySelector('#app');
 
 app.innerHTML = `
   <div class="lp">
-    <section class="hero" aria-label="HappinessLife株式会社 採用ページ ファーストビュー">
+    <section class="scrollStory" id="top" aria-label="HappinessLife株式会社 採用ページ ファーストビュー">
       <h1 class="sr-only">HappinessLife株式会社 採用LP</h1>
-      <div class="heroFallback" aria-hidden="true">
-        ${assets.images.slice(0, 6).map((src, index) => imageTag(src, remoteAssets.images[index], '')).join('')}
-      </div>
-      <canvas class="webglCanvas" id="heroCanvas"></canvas>
-      <div class="heroUi">
-        <div class="header">
-          <a class="logoWrap" href="#about" aria-label="HappinessLife 採用ページ本文へ">
-            ${imageTag(assets.logo, remoteAssets.logo, 'Happiness Life')}
-          </a>
-          <a class="miniBtn" href="#entry">ENTRY</a>
+      <div class="scrollStorySticky">
+        <div class="scrollStoryImages" aria-hidden="true">
+          ${[0, 1, 2].map((index) => imageTag(
+            assets.images[index],
+            remoteAssets.images[index],
+            '',
+            `class="scrollStoryImage${index === 0 ? ' is-active' : ''}"`
+          )).join('')}
         </div>
-        <div class="scrollText">SCROLL</div>
+        <div class="scrollStoryOverlay"></div>
+        <div class="scrollStoryUi">
+          <div class="header">
+            <a class="logoWrap" href="#about" aria-label="HappinessLife 採用ページ本文へ">
+              ${imageTag(assets.logo, remoteAssets.logo, 'Happiness Life')}
+            </a>
+            <a class="miniBtn" href="#entry">ENTRY</a>
+          </div>
+          <div class="scrollStoryCopy">
+            <p class="scrollStoryLine">次世代の営業会社。</p>
+            <p class="scrollStoryLine">AIを活用した営業スキルで、</p>
+            <p class="scrollStoryLine">関わる人の人生を変える。</p>
+          </div>
+          <div class="scrollStorySteps" aria-hidden="true">
+            <span class="scrollStoryStep is-active"></span>
+            <span class="scrollStoryStep"></span>
+            <span class="scrollStoryStep"></span>
+          </div>
+          <div class="scrollStoryProgress" aria-hidden="true">
+            <span class="scrollStoryProgressFill"></span>
+          </div>
+          <div class="scrollText">SCROLL</div>
+        </div>
       </div>
     </section>
 
@@ -255,10 +274,8 @@ app.innerHTML = `
   </div>
 `;
 
-const page = document.querySelector('.lp');
-
 initReveal();
-initWebGLHero();
+initScrollStory();
 
 function initReveal() {
   const items = document.querySelectorAll('.reveal');
@@ -279,372 +296,67 @@ function initReveal() {
   items.forEach((item) => observer.observe(item));
 }
 
-function initWebGLHero() {
-  const hero = document.querySelector('.hero');
-  const canvas = document.querySelector('#heroCanvas');
-  if (!hero || !canvas) return;
+function initScrollStory() {
+  const section = document.querySelector('.scrollStory');
+  if (!section) return;
 
+  const images = [...section.querySelectorAll('.scrollStoryImage')];
+  const lines = [...section.querySelectorAll('.scrollStoryLine')];
+  const steps = [...section.querySelectorAll('.scrollStoryStep')];
+  const progressFill = section.querySelector('.scrollStoryProgressFill');
+  const stepCount = lines.length;
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let width = 1;
-  let height = 1;
-  let time = 0;
-  let targetMouseX = 0;
-  let targetMouseY = 0;
-  let mouseX = 0;
-  let mouseY = 0;
-  let animationFrameId = null;
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-  camera.position.set(0, 0, 10.8);
-
-  const renderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias: true,
-    alpha: true,
-    powerPreference: 'high-performance'
-  });
-  renderer.setClearColor(0x000000, 0);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.8));
-
-  const world = new THREE.Group();
-  scene.add(world);
-
-  scene.add(new THREE.AmbientLight(0xffffff, 1.2));
-
-  const keyLight = new THREE.PointLight(0xff8a2a, 3.1, 28);
-  keyLight.position.set(-3.8, 3.4, 5.2);
-  scene.add(keyLight);
-
-  const blueLight = new THREE.PointLight(0x4085ff, 2.2, 24);
-  blueLight.position.set(4.2, -2.4, 4);
-  scene.add(blueLight);
-
-  const pinkLight = new THREE.PointLight(0xe7317b, 2.2, 24);
-  pinkLight.position.set(2.6, 2.6, 3.8);
-  scene.add(pinkLight);
-
-  const textureLoader = new THREE.TextureLoader();
-  const cards = [];
-
-  const vertexShader = `
-    uniform float uTime;
-    uniform float uWave;
-    varying vec2 vUv;
-
-    void main() {
-      vUv = uv;
-      vec3 p = position;
-      float waveA = sin((p.x * 2.2) + uTime * 0.9) * 0.035;
-      float waveB = cos((p.y * 3.1) - uTime * 0.7) * 0.028;
-      p.z += (waveA + waveB) * uWave;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-    }
-  `;
-
-  const fragmentShader = `
-    uniform sampler2D uTexture;
-    uniform float uOpacity;
-    varying vec2 vUv;
-
-    void main() {
-      vec4 tex = texture2D(uTexture, vUv);
-      float d = distance(vUv, vec2(0.5, 0.5));
-      float vignette = smoothstep(0.82, 0.18, d);
-      vec3 warm = vec3(1.0, 0.44, 0.09) * 0.045;
-      vec3 color = tex.rgb * (0.78 + vignette * 0.27) + warm;
-      gl_FragColor = vec4(color, uOpacity);
-    }
-  `;
-
-  const cardSpecs = [
-    { x: -3.8, y: 1.35, z: -0.2, w: 3.2, h: 2.28, ry: 0.22, rz: -0.06, scale: 1.05 },
-    { x: 0.25, y: 1.6, z: -0.7, w: 3.7, h: 2.56, ry: -0.08, rz: 0.04, scale: 1.14 },
-    { x: 3.62, y: 0.58, z: -0.3, w: 3.0, h: 2.14, ry: -0.24, rz: 0.07, scale: 1.02 },
-    { x: -2.8, y: -1.55, z: 0.1, w: 3.1, h: 2.2, ry: 0.18, rz: 0.08, scale: 1.08 },
-    { x: 1.52, y: -1.42, z: 0.2, w: 3.55, h: 2.38, ry: -0.15, rz: -0.05, scale: 1.08 },
-    { x: 4.55, y: -1.55, z: -1.1, w: 2.5, h: 1.86, ry: -0.24, rz: -0.02, scale: 0.88 },
-    { x: -5.0, y: -0.2, z: -1.4, w: 2.55, h: 1.82, ry: 0.32, rz: 0.03, scale: 0.86 }
-  ];
-
-  assets.images.forEach((url, index) => createCard(url, cardSpecs[index], index));
-
-  const particlesA = createParticles(720, 6.2, 0xff8a22, 0.018, 0.52);
-  const particlesB = createParticles(420, 5.2, 0xffffff, 0.012, 0.36);
-  const particlesC = createParticles(300, 5.7, 0x3f85ff, 0.015, 0.34);
-
-  const ringA = createRing(4.25, 0xff7a1a, 0.32, { x: 1.15, y: 0.2, z: -0.08 });
-  const ringB = createRing(5.1, 0xe7317b, 0.18, { x: 1.4, y: -0.32, z: 0.22 });
-  const ringC = createRing(3.52, 0xffffff, 0.14, { x: 1.25, y: 0.62, z: -0.44 });
-
-  const phoneA = createPhone(-4.9, 2.38, -0.1, 1.08, 0xff7a1a);
-  const phoneB = createPhone(4.75, 1.8, -0.55, 0.86, 0xe7317b);
-  const phoneC = createPhone(-0.6, -2.72, -0.22, 0.74, 0x2b7cff);
-
-  window.addEventListener('resize', resize, { passive: true });
-  hero.addEventListener('pointermove', onPointerMove, { passive: true });
-
-  resize();
-  hero.classList.add('is-webgl-ready');
-  animate();
-
-  function fallbackTexture(index) {
-    const c = document.createElement('canvas');
-    c.width = 1024;
-    c.height = 640;
-    const ctx = c.getContext('2d');
-    const gradients = [
-      ['#ff7a1a', '#e7317b', '#111111'],
-      ['#e7317b', '#2b7cff', '#0c0c0c'],
-      ['#ffb14a', '#ff7a1a', '#141414'],
-      ['#2b7cff', '#ff7a1a', '#0a0a0a']
-    ];
-    const colors = gradients[index % gradients.length];
-    const grad = ctx.createLinearGradient(0, 0, c.width, c.height);
-    grad.addColorStop(0, colors[0]);
-    grad.addColorStop(0.52, colors[1]);
-    grad.addColorStop(1, colors[2]);
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, c.width, c.height);
-    ctx.globalAlpha = 0.16;
-    for (let i = 0; i < 26; i += 1) {
-      ctx.beginPath();
-      ctx.arc(Math.random() * c.width, Math.random() * c.height, 30 + Math.random() * 130, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-    }
-    ctx.globalAlpha = 0.18;
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#ffffff';
-    for (let i = 0; i < 18; i += 1) {
-      ctx.beginPath();
-      ctx.moveTo(Math.random() * c.width, Math.random() * c.height);
-      ctx.lineTo(Math.random() * c.width, Math.random() * c.height);
-      ctx.stroke();
-    }
-    const texture = new THREE.CanvasTexture(c);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.needsUpdate = true;
-    return texture;
+  if (prefersReduced) {
+    images.forEach((img, i) => img.classList.toggle('is-active', i === 0));
+    lines.forEach((line) => line.classList.add('is-visible'));
+    steps.forEach((step, i) => step.classList.toggle('is-active', i === 0));
+    if (progressFill) progressFill.style.width = '100%';
+    return;
   }
 
-  function coverTexture(texture, planeRatio) {
-    const img = texture.image;
-    if (!img || !img.width || !img.height) return;
-    const imageRatio = img.width / img.height;
-    texture.wrapS = THREE.ClampToEdgeWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    if (imageRatio > planeRatio) {
-      texture.repeat.x = planeRatio / imageRatio;
-      texture.repeat.y = 1;
-      texture.offset.x = (1 - texture.repeat.x) / 2;
-      texture.offset.y = 0;
-    } else {
-      texture.repeat.x = 1;
-      texture.repeat.y = imageRatio / planeRatio;
-      texture.offset.x = 0;
-      texture.offset.y = (1 - texture.repeat.y) / 2;
+  let ticking = false;
+
+  function update() {
+    ticking = false;
+    const rect = section.getBoundingClientRect();
+    const scrollable = Math.max(section.offsetHeight - window.innerHeight, 1);
+    const scrolled = Math.min(Math.max(-rect.top, 0), scrollable);
+    const progress = scrolled / scrollable;
+
+    if (progressFill) {
+      progressFill.style.width = `${progress * 100}%`;
     }
-    texture.needsUpdate = true;
-  }
 
-  function createCard(url, spec, index) {
-    const group = new THREE.Group();
-    group.position.set(spec.x, spec.y, spec.z);
-    group.rotation.set(0, spec.ry || 0, spec.rz || 0);
-    group.scale.setScalar(spec.scale || 1);
-
-    const geometry = new THREE.PlaneGeometry(spec.w, spec.h, 34, 24);
-    const material = new THREE.ShaderMaterial({
-      uniforms: {
-        uTexture: { value: fallbackTexture(index) },
-        uTime: { value: 0 },
-        uWave: { value: 1 },
-        uOpacity: { value: 0.84 }
-      },
-      vertexShader,
-      fragmentShader,
-      transparent: true,
-      depthWrite: false
+    images.forEach((img, index) => {
+      const center = stepCount <= 1 ? 0 : index / (stepCount - 1);
+      const distance = Math.abs(progress - center) * (stepCount - 1);
+      const opacity = Math.max(0, 1 - distance * 0.85);
+      const scale = 1.04 + (1 - opacity) * 0.08;
+      img.style.opacity = String(opacity);
+      img.style.transform = `scale(${scale})`;
+      img.classList.toggle('is-active', opacity > 0.45);
     });
 
-    const mesh = new THREE.Mesh(geometry, material);
-    group.add(mesh);
-
-    const shadow = new THREE.Mesh(
-      new THREE.PlaneGeometry(spec.w + 0.18, spec.h + 0.18),
-      new THREE.MeshBasicMaterial({
-        color: 0x000000,
-        transparent: true,
-        opacity: 0.24,
-        depthWrite: false
-      })
-    );
-    shadow.position.z = -0.05;
-    shadow.position.y = -0.06;
-    group.add(shadow);
-    group.add(makeFrame(spec.w, spec.h));
-
-    textureLoader.load(
-      url,
-      (texture) => {
-        texture.colorSpace = THREE.SRGBColorSpace;
-        coverTexture(texture, spec.w / spec.h);
-        material.uniforms.uTexture.value = texture;
-        material.uniforms.uTexture.value.needsUpdate = true;
-      },
-      undefined,
-      () => {}
-    );
-
-    world.add(group);
-    cards.push({ group, material, baseX: spec.x, baseY: spec.y, baseZ: spec.z, index });
-  }
-
-  function makeFrame(w, h) {
-    const hw = w / 2;
-    const hh = h / 2;
-    const points = [
-      new THREE.Vector3(-hw, -hh, 0),
-      new THREE.Vector3(hw, -hh, 0),
-      new THREE.Vector3(hw, hh, 0),
-      new THREE.Vector3(-hw, hh, 0),
-      new THREE.Vector3(-hw, -hh, 0)
-    ];
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.26 });
-    const line = new THREE.Line(geometry, material);
-    line.position.z = 0.04;
-    return line;
-  }
-
-  function createParticles(count, radius, color, size, opacity) {
-    const positions = new Float32Array(count * 3);
-    for (let i = 0; i < count; i += 1) {
-      const r = radius * (0.35 + Math.random() * 0.65);
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos((Math.random() * 2) - 1);
-      positions[i * 3 + 0] = Math.sin(phi) * Math.cos(theta) * r * 1.25;
-      positions[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * r * 0.62;
-      positions[i * 3 + 2] = Math.cos(phi) * r * 0.55;
-    }
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const material = new THREE.PointsMaterial({
-      color,
-      size,
-      transparent: true,
-      opacity,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending
-    });
-    const points = new THREE.Points(geometry, material);
-    world.add(points);
-    return points;
-  }
-
-  function createRing(radius, color, opacity, rotation) {
-    const geometry = new THREE.TorusGeometry(radius, 0.008, 8, 240);
-    const material = new THREE.MeshBasicMaterial({
-      color,
-      transparent: true,
-      opacity,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending
-    });
-    const ring = new THREE.Mesh(geometry, material);
-    ring.rotation.set(rotation.x, rotation.y, rotation.z);
-    world.add(ring);
-    return ring;
-  }
-
-  function createPhone(x, y, z, scale, color) {
-    const group = new THREE.Group();
-    const body = new THREE.Mesh(
-      new THREE.BoxGeometry(0.58, 1.1, 0.035),
-      new THREE.MeshStandardMaterial({ color, roughness: 0.18, metalness: 0.18, transparent: true, opacity: 0.38 })
-    );
-    const screen = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.47, 0.86),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.13 })
-    );
-    screen.position.z = 0.022;
-    const home = new THREE.Mesh(
-      new THREE.CircleGeometry(0.035, 24),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.24 })
-    );
-    home.position.z = 0.024;
-    home.position.y = -0.47;
-    group.add(body, screen, home);
-    group.position.set(x, y, z);
-    group.scale.setScalar(scale);
-    world.add(group);
-    return group;
-  }
-
-  function resize() {
-    const rect = hero.getBoundingClientRect();
-    width = Math.max(1, rect.width);
-    height = Math.max(1, rect.height);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height, false);
-    const isMobile = width < 680;
-    world.scale.setScalar(isMobile ? 0.68 : width < 980 ? 0.82 : 1);
-    camera.position.z = isMobile ? 12.6 : 10.8;
-  }
-
-  function onPointerMove(event) {
-    const rect = hero.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / rect.width;
-    const y = (event.clientY - rect.top) / rect.height;
-    targetMouseX = (x - 0.5) * 2;
-    targetMouseY = (y - 0.5) * 2;
-  }
-
-  function animate() {
-    const speed = prefersReduced ? 0.25 : 1;
-    time += 0.012 * speed;
-    mouseX += (targetMouseX - mouseX) * 0.045;
-    mouseY += (targetMouseY - mouseY) * 0.045;
-
-    world.rotation.y = mouseX * 0.09 + Math.sin(time * 0.22) * 0.045;
-    world.rotation.x = -mouseY * 0.045 + Math.cos(time * 0.18) * 0.02;
-
-    particlesA.rotation.y += 0.0009 * speed;
-    particlesA.rotation.x += 0.0004 * speed;
-    particlesB.rotation.y -= 0.0007 * speed;
-    particlesC.rotation.z += 0.0008 * speed;
-
-    ringA.rotation.z += 0.0018 * speed;
-    ringB.rotation.z -= 0.0012 * speed;
-    ringC.rotation.z += 0.001 * speed;
-
-    phoneA.rotation.y = Math.sin(time * 0.72) * 0.55;
-    phoneA.rotation.z = Math.cos(time * 0.42) * 0.12;
-    phoneB.rotation.y = Math.cos(time * 0.58) * 0.52;
-    phoneB.rotation.z = Math.sin(time * 0.5) * 0.1;
-    phoneC.rotation.y = Math.sin(time * 0.62) * 0.5;
-    phoneC.rotation.z = Math.sin(time * 0.38) * 0.12;
-
-    cards.forEach((card) => {
-      const offset = card.index * 0.74;
-      card.group.position.y = card.baseY + Math.sin(time * 0.8 + offset) * 0.12;
-      card.group.position.x = card.baseX + Math.cos(time * 0.52 + offset) * 0.055;
-      card.group.rotation.z += Math.sin(time + offset) * 0.00016 * speed;
-      card.material.uniforms.uTime.value = time + offset;
+    lines.forEach((line, index) => {
+      const threshold = index / stepCount + 0.04;
+      line.classList.toggle('is-visible', progress >= threshold);
     });
 
-    camera.position.x += (mouseX * 0.38 - camera.position.x) * 0.025;
-    camera.position.y += (-mouseY * 0.26 - camera.position.y) * 0.025;
-    camera.lookAt(0, 0, 0);
-    renderer.render(scene, camera);
-    animationFrameId = requestAnimationFrame(animate);
+    steps.forEach((step, index) => {
+      const threshold = (index + 0.5) / stepCount;
+      step.classList.toggle('is-active', progress >= threshold - 0.12);
+    });
   }
 
-  window.addEventListener('beforeunload', () => {
-    if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    renderer.dispose();
-  });
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  update();
 }
+
