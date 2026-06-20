@@ -64,8 +64,8 @@ a {
 /* ── Scroll story hero ── */
 .scrollStory {
   position: relative;
-  height: 300vh;
-  background: linear-gradient(180deg, var(--sky-light) 0%, #1e3a5f 100%);
+  height: 400vh;
+  background: var(--sky-light);
 }
 
 .scrollStorySticky {
@@ -121,6 +121,15 @@ a {
   inset: 0;
   z-index: 8;
   pointer-events: none;
+}
+
+.scrollStoryUi .header {
+  transition: opacity 0.35s ease;
+}
+
+.scrollStory.is-outro .scrollStoryUi .header .logoWrap {
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.1);
 }
 
 .header {
@@ -184,6 +193,7 @@ a {
   flex-direction: column;
   gap: 0.35em;
   pointer-events: none;
+  transition: opacity 0.45s ease, transform 0.45s ease;
 }
 
 .scrollStoryLine {
@@ -204,6 +214,62 @@ a {
   opacity: 1;
   transform: translateY(0);
   filter: blur(0);
+}
+
+.scrollStoryOutro {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(96px, 14vh, 140px) clamp(20px, 6vw, 88px) clamp(88px, 12vh, 120px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, #ffffff 36%);
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+  pointer-events: none;
+}
+
+.scrollStoryOutro .kicker {
+  color: var(--accent);
+}
+
+.scrollStoryOutro .kicker::before {
+  background: linear-gradient(90deg, var(--sky), var(--accent));
+}
+
+.scrollStoryOutro .title {
+  color: var(--text);
+}
+
+.scrollStoryOutro .title span {
+  color: transparent;
+  background: linear-gradient(90deg, var(--accent-dark) 0%, var(--accent) 45%, var(--sky) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.scrollStory.is-outro .scrollStoryOutro {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scrollStory.is-outro .scrollStoryCopy,
+.scrollStory.is-outro .scrollStorySteps {
+  opacity: 0;
+  transform: translateY(-16px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.scrollStory.is-outro .scrollStoryImages,
+.scrollStory.is-outro .scrollStoryOverlay {
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+
+.scrollStory.is-outro .scrollStoryUi .header {
+  pointer-events: auto;
 }
 
 .scrollStorySteps {
@@ -289,19 +355,15 @@ a {
 /* ── Main content ── */
 .main {
   position: relative;
-  z-index: 11;
-  margin-top: -100vh;
-  border-radius: 32px 32px 0 0;
-  overflow: hidden;
+  z-index: 10;
   background:
     radial-gradient(circle at 8% 0%, rgba(125, 211, 252, 0.35), transparent 32%),
     radial-gradient(circle at 95% 12%, rgba(37, 99, 235, 0.08), transparent 34%),
     #ffffff;
-  box-shadow: 0 -28px 80px rgba(15, 23, 42, 0.12);
 }
 
 .main > .section:first-child {
-  padding-top: 88px;
+  padding-top: 64px;
 }
 
 .container {
@@ -754,11 +816,7 @@ a {
   }
 
   .scrollStory {
-    height: 260vh;
-  }
-
-  .main {
-    margin-top: -80vh;
+    height: 340vh;
   }
 }
 

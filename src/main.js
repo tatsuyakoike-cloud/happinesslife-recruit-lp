@@ -61,6 +61,10 @@ app.innerHTML = `
             <p class="scrollStoryLine">AIを活用した営業スキルで、</p>
             <p class="scrollStoryLine">関わる人の人生を変える。</p>
           </div>
+          <div class="scrollStoryOutro">
+            <div class="kicker">RECRUIT MESSAGE</div>
+            <h2 class="title">現場を動かす力は、<br><span>人生を前に進める力になる。</span></h2>
+          </div>
           <div class="scrollStorySteps" aria-hidden="true">
             <span class="scrollStoryStep is-active"></span>
             <span class="scrollStoryStep"></span>
@@ -78,8 +82,7 @@ app.innerHTML = `
       <section class="section" id="about">
         <div class="container">
           <div class="introBlock">
-            <div class="kicker">RECRUIT MESSAGE</div>
-            <h2 class="title">現場を動かす力は、<br><span>人生を前に進める力になる。</span></h2>
+            <h2 class="sr-only">現場を動かす力は、人生を前に進める力になる。</h2>
             <p class="lead">
               HappinessLifeは、通信イベント・営業代行・販売支援・人材ソリューションを軸に、
               お客様とクライアントの成果をつくる会社です。
@@ -304,13 +307,16 @@ function initScrollStory() {
   const lines = [...section.querySelectorAll('.scrollStoryLine')];
   const steps = [...section.querySelectorAll('.scrollStoryStep')];
   const progressFill = section.querySelector('.scrollStoryProgressFill');
+  const scrollText = section.querySelector('.scrollText');
   const stepCount = lines.length;
+  const storyPhase = 0.75;
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (prefersReduced) {
     images.forEach((img, i) => img.classList.toggle('is-active', i === 0));
     lines.forEach((line) => line.classList.add('is-visible'));
     steps.forEach((step, i) => step.classList.toggle('is-active', i === 0));
+    section.classList.add('is-outro');
     if (progressFill) progressFill.style.width = '100%';
     return;
   }
@@ -323,30 +329,47 @@ function initScrollStory() {
     const scrollable = Math.max(section.offsetHeight - window.innerHeight, 1);
     const scrolled = Math.min(Math.max(-rect.top, 0), scrollable);
     const progress = scrolled / scrollable;
+    const inStory = progress < storyPhase;
+    const storyProgress = inStory ? progress / storyPhase : 1;
+
+    section.classList.toggle('is-outro', progress >= storyPhase - 0.02);
 
     if (progressFill) {
       progressFill.style.width = `${progress * 100}%`;
     }
 
-    images.forEach((img, index) => {
-      const center = stepCount <= 1 ? 0 : index / (stepCount - 1);
-      const distance = Math.abs(progress - center) * (stepCount - 1);
-      const opacity = Math.max(0, 1 - distance * 0.85);
-      const scale = 1.04 + (1 - opacity) * 0.08;
-      img.style.opacity = String(opacity);
-      img.style.transform = `scale(${scale})`;
-      img.classList.toggle('is-active', opacity > 0.45);
-    });
+    if (scrollText) {
+      scrollText.style.opacity = progress >= storyPhase ? '0' : '1';
+    }
 
-    lines.forEach((line, index) => {
-      const threshold = index / stepCount + 0.04;
-      line.classList.toggle('is-visible', progress >= threshold);
-    });
+    if (inStory) {
+      images.forEach((img, index) => {
+        const center = stepCount <= 1 ? 0 : index / (stepCount - 1);
+        const distance = Math.abs(storyProgress - center) * (stepCount - 1);
+        const opacity = Math.max(0, 1 - distance * 0.85);
+        const scale = 1.04 + (1 - opacity) * 0.08;
+        img.style.opacity = String(opacity);
+        img.style.transform = `scale(${scale})`;
+        img.classList.toggle('is-active', opacity > 0.45);
+      });
 
-    steps.forEach((step, index) => {
-      const threshold = (index + 0.5) / stepCount;
-      step.classList.toggle('is-active', progress >= threshold - 0.12);
-    });
+      lines.forEach((line, index) => {
+        const threshold = index / stepCount + 0.03;
+        line.classList.toggle('is-visible', storyProgress >= threshold);
+      });
+
+      steps.forEach((step, index) => {
+        const threshold = (index + 0.5) / stepCount;
+        step.classList.toggle('is-active', storyProgress >= threshold - 0.1);
+      });
+    } else {
+      images.forEach((img) => {
+        img.style.opacity = '0';
+        img.classList.remove('is-active');
+      });
+      lines.forEach((line) => line.classList.remove('is-visible'));
+      steps.forEach((step) => step.classList.remove('is-active'));
+    }
   }
 
   function onScroll() {
