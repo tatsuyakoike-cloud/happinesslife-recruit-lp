@@ -38,7 +38,7 @@ const app = document.querySelector('#app');
 app.innerHTML = `
   <div class="lp">
     <section class="scrollStory" id="top" aria-label="HappinessLife株式会社 採用ページ ファーストビュー">
-      <h1 class="sr-only">HappinessLife株式会社 採用LP</h1>
+      <div class="scrollStorySpacer" aria-hidden="true"></div>
       <div class="scrollStorySticky">
         <div class="scrollStoryImages" aria-hidden="true">
           ${[0, 1, 2].map((index) => imageTag(
@@ -50,6 +50,7 @@ app.innerHTML = `
         </div>
         <div class="scrollStoryOverlay"></div>
         <div class="scrollStoryUi">
+          <h1 class="sr-only">HappinessLife株式会社 採用LP</h1>
           <div class="header">
             <a class="logoWrap" href="#about" aria-label="HappinessLife 採用ページ本文へ">
               ${imageTag(assets.logo, remoteAssets.logo, 'Happiness Life')}
@@ -78,11 +79,12 @@ app.innerHTML = `
       </div>
     </section>
 
-    <main class="main">
-      <section class="section" id="about">
+    <main class="main" aria-hidden="true">
+      <section class="section secondView" id="about">
         <div class="container">
           <div class="introBlock">
-            <h2 class="sr-only">現場を動かす力は、人生を前に進める力になる。</h2>
+            <div class="kicker">RECRUIT MESSAGE</div>
+            <h2 class="title">現場を動かす力は、<br><span>人生を前に進める力になる。</span></h2>
             <p class="lead">
               HappinessLifeは、通信イベント・営業代行・販売支援・人材ソリューションを軸に、
               お客様とクライアントの成果をつくる会社です。
@@ -299,53 +301,72 @@ function initReveal() {
   items.forEach((item) => observer.observe(item));
 }
 
+const STORY_LINE_COUNT = 3;
+const STORY_PHASE_END = 0.72;
+const OUTRO_START = 0.72;
+
 function initScrollStory() {
   const section = document.querySelector('.scrollStory');
-  if (!section) return;
+  const main = document.querySelector('.main');
+  if (!section || !main) return;
 
+  const spacer = section.querySelector('.scrollStorySpacer');
+  const panel = section.querySelector('.scrollStorySticky');
   const images = [...section.querySelectorAll('.scrollStoryImage')];
   const lines = [...section.querySelectorAll('.scrollStoryLine')];
   const steps = [...section.querySelectorAll('.scrollStoryStep')];
   const progressFill = section.querySelector('.scrollStoryProgressFill');
   const scrollText = section.querySelector('.scrollText');
-  const stepCount = lines.length;
-  const storyPhase = 0.75;
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.documentElement.style.setProperty('--hero-scroll-steps', '4');
 
   if (prefersReduced) {
     images.forEach((img, i) => img.classList.toggle('is-active', i === 0));
     lines.forEach((line) => line.classList.add('is-visible'));
-    steps.forEach((step, i) => step.classList.toggle('is-active', i === 0));
-    section.classList.add('is-outro');
+    steps.forEach((step, i) => step.classList.toggle('is-active', i === STORY_LINE_COUNT - 1));
+    section.classList.add('is-outro', 'is-complete');
+    panel?.classList.add('is-complete');
+    main.classList.add('is-unlocked');
+    main.removeAttribute('aria-hidden');
     if (progressFill) progressFill.style.width = '100%';
     return;
   }
 
   let ticking = false;
 
+  function getProgress() {
+    if (!spacer) return 0;
+    const maxScroll = Math.max(spacer.offsetHeight - window.innerHeight, 1);
+    return Math.min(Math.max(window.scrollY / maxScroll, 0), 1);
+  }
+
   function update() {
     ticking = false;
-    const rect = section.getBoundingClientRect();
-    const scrollable = Math.max(section.offsetHeight - window.innerHeight, 1);
-    const scrolled = Math.min(Math.max(-rect.top, 0), scrollable);
-    const progress = scrolled / scrollable;
-    const inStory = progress < storyPhase;
-    const storyProgress = inStory ? progress / storyPhase : 1;
+    const progress = getProgress();
+    const inStory = progress < OUTRO_START;
+    const storyProgress = inStory ? progress / STORY_PHASE_END : 1;
+    const isComplete = progress >= 0.998;
 
-    section.classList.toggle('is-outro', progress >= storyPhase - 0.02);
+    section.classList.toggle('is-outro', progress >= OUTRO_START);
+    section.classList.toggle('is-complete', isComplete);
+    panel?.classList.toggle('is-complete', isComplete);
+    main.classList.toggle('is-unlocked', isComplete);
+    main.toggleAttribute('aria-hidden', !isComplete);
+    document.body.classList.toggle('is-hero-active', !isComplete);
 
     if (progressFill) {
       progressFill.style.width = `${progress * 100}%`;
     }
 
     if (scrollText) {
-      scrollText.style.opacity = progress >= storyPhase ? '0' : '1';
+      scrollText.style.opacity = progress >= OUTRO_START ? '0' : '1';
     }
 
     if (inStory) {
       images.forEach((img, index) => {
-        const center = stepCount <= 1 ? 0 : index / (stepCount - 1);
-        const distance = Math.abs(storyProgress - center) * (stepCount - 1);
+        const center = STORY_LINE_COUNT <= 1 ? 0 : index / (STORY_LINE_COUNT - 1);
+        const distance = Math.abs(storyProgress - center) * (STORY_LINE_COUNT - 1);
         const opacity = Math.max(0, 1 - distance * 0.85);
         const scale = 1.04 + (1 - opacity) * 0.08;
         img.style.opacity = String(opacity);
@@ -354,15 +375,15 @@ function initScrollStory() {
       });
 
       lines.forEach((line, index) => {
-        const threshold = index / stepCount + 0.03;
+        const threshold = index / STORY_LINE_COUNT + 0.03;
         line.classList.toggle('is-visible', storyProgress >= threshold);
       });
 
       steps.forEach((step, index) => {
-        const threshold = (index + 0.5) / stepCount;
+        const threshold = (index + 0.5) / STORY_LINE_COUNT;
         step.classList.toggle('is-active', storyProgress >= threshold - 0.1);
       });
-    } else {
+    } else if (!isComplete) {
       images.forEach((img) => {
         img.style.opacity = '0';
         img.classList.remove('is-active');
