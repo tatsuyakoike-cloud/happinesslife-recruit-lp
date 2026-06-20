@@ -64,7 +64,8 @@ a {
 /* ── Scroll story hero ── */
 .scrollStory {
   position: relative;
-  height: 320vh;
+  height: 300vh;
+  background: linear-gradient(180deg, var(--sky-light) 0%, #1e3a5f 100%);
 }
 
 .scrollStorySticky {
@@ -288,11 +289,19 @@ a {
 /* ── Main content ── */
 .main {
   position: relative;
-  z-index: 10;
+  z-index: 11;
+  margin-top: -100vh;
+  border-radius: 32px 32px 0 0;
+  overflow: hidden;
   background:
     radial-gradient(circle at 8% 0%, rgba(125, 211, 252, 0.35), transparent 32%),
     radial-gradient(circle at 95% 12%, rgba(37, 99, 235, 0.08), transparent 34%),
     #ffffff;
+  box-shadow: 0 -28px 80px rgba(15, 23, 42, 0.12);
+}
+
+.main > .section:first-child {
+  padding-top: 88px;
 }
 
 .container {
@@ -704,6 +713,11 @@ a {
   transform: translateY(0);
 }
 
+.introBlock {
+  position: relative;
+  z-index: 2;
+}
+
 @media (max-width: 920px) {
   .grid2,
   .grid3,
@@ -740,7 +754,11 @@ a {
   }
 
   .scrollStory {
-    height: 280vh;
+    height: 260vh;
+  }
+
+  .main {
+    margin-top: -80vh;
   }
 }
 

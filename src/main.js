@@ -77,7 +77,7 @@ app.innerHTML = `
     <main class="main">
       <section class="section" id="about">
         <div class="container">
-          <div class="reveal">
+          <div class="introBlock">
             <div class="kicker">RECRUIT MESSAGE</div>
             <h2 class="title">現場を動かす力は、<br><span>人生を前に進める力になる。</span></h2>
             <p class="lead">
@@ -291,7 +291,7 @@ function initReveal() {
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.16 });
+  }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
 
   items.forEach((item) => observer.observe(item));
 }
